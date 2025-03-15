@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Maker</title>
+    <style>
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #4ecdc4;
+            --dark: #1a535c;
+            --light: #f7fff7;
+            --crust: #e6b17e;
+            --sauce: #d62828;
+            --cheese: #fff4bd;
+            --success: #6bd968;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .sidebar {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 280px;
+            height: fit-content;
+        }
+        
+        .sidebar h2 {
+            color: var(--dark);
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        
+        .pizza-area {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 350px;
+            min-height: 480px;
+            position: relative;
+        }
+        
+        .pizza-container {
+            width: 350px;
+            height: 350px;
+            position: relative;
+            margin-top: 20px;
+        }
+        
+        .pizza-base {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .pizza-sauce {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        
+        .pizza-cheese {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background-color: var(--cheese);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        
+        .ingredient-list, .dough-list, .base-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .ingredient-item, .dough-item, .base-item {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--light);
+            border-radius: 10px;
+            cursor: grab;
+            font-size: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            user-select: none;
+        }
+        
+        .ingredient-item:hover, .dough-item:hover, .base-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .ingredient-item:active, .dough-item:active, .base-item:active {
+            cursor: grabbing;
+        }
+        
+        .ingredient {
+            position: absolute;
+            font-size: 2rem;
+            cursor: move;
+            user-select: none;
+            z-index: 10;
+        }
+        
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .button:hover {
+            background-color: #ff4f4f;
+        }
+        
+        .cook-button {
+            background-color: var(--secondary);
+        }
+        
+        .cook-button:hover {
+            background-color: #3ab9b2;
+        }
+        
+        .instructions {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+        
+        .price-display {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        .progress-container {
+            width: 80%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--secondary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .cooking-message {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            color: var(--dark);
+            font-weight: bold;
+            display: none;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f0f;
+            border-radius: 50%;
+            z-index: 25;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🍕 Pizza Maker 🍕</h1>
+    
+    <div class="container">
+        <div class="sidebar">
+            <h2>Dough Types</h2>
+            <div class="dough-list">
+                <div class="dough-item" data-dough="classic" data-price="5" draggable="true">🟤</div>
+                <div class="dough-item" data-dough="thin" data-price="4" draggable="true">🟡</div>
+                <div class="dough-item" data-dough="stuffed" data-price="7" draggable="true">🟠</div>
+            </div>
+            
+            <h2 style="margin-top: 20px;">Base Layers</h2>
+            <div class="base-list">
+                <div class="base-item" data-base="tomato" data-price="2" draggable="true">🍅</div>
+                <div class="base-item" data-base="cheese" data-price="3" draggable="true">🧀</div>
+            </div>
+            
+            <h2 style="margin-top: 20px;">Toppings</h2>
+            <div class="ingredient-list">
+                <div class="ingredient-item" data-ingredient="pepperoni" data-price="1.5" draggable="true">🍖</div>
+                <div class="ingredient-item" data-ingredient="mushroom" data-price="1" draggable="true">🍄</div>
+                <div class="ingredient-item" data-ingredient="olive" data-price="0.5" draggable="true">🫒</div>
+                <div class="ingredient-item" data-ingredient="pepper" data-price="0.5" draggable="true">🌶️</div>
+                <div class="ingredient-item" data-ingredient="pineapple" data-price="1" draggable="true">🍍</div>
+                <div class="ingredient-item" data-ingredient="tomato" data-price="0.5" draggable="true">🍅</div>
+                <div class="ingredient-item" data-ingredient="corn" data-price="0.5" draggable="true">🌽</div>
+                <div class="ingredient-item" data-ingredient="broccoli" data-price="1" draggable="true">🥦</div>
+            </div>
+        </div>
+        
+        <div class="pizza-area">
+            <h2>Your Pizza Creation</h2>
+            
+            <div class="pizza-container">
+                <div class="pizza-base" id="pizza-base" style="background-color: var(--crust);">
+                    <div class="pizza-sauce" id="pizza-sauce" style="background-color: var(--sauce);"></div>
+                    <div class="pizza-cheese" id="pizza-cheese"></div>
+                </div>
+            </div>
+            
+            <p class="instructions">Drag ingredients onto the pizza to build your dream pizza!</p>
+            
+            <div class="price-display" id="price-display">Total: $5.00</div>
+            
+            <button class="button cook-button" id="cook-button">Cook Pizza</button>
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="cooking-message" id="cooking-message"></div>
+            
+            <button class="button" id="reset-button">Start Over</button>
+        </div>
+        <div class="button finish-button" id="finish-button">
+            <a href="omar mahmoud.html">
+                <button class="button" id="finish-button">🍕 Track your pizza! 🍕
+                    (Press after cooking)
+                </button>
+            </a>
+            
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pizzaBase = document.getElementById('pizza-base');
+            const pizzaSauce = document.getElementById('pizza-sauce');
+            const pizzaCheese = document.getElementById('pizza-cheese');
+            const resetButton = document.getElementById('reset-button');
+            const cookButton = document.getElementById('cook-button');
+            const priceDisplay = document.getElementById('price-display');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const cookingMessage = document.getElementById('cooking-message');
+            
+            const ingredientItems = document.querySelectorAll('.ingredient-item');
+            const doughItems = document.querySelectorAll('.dough-item');
+            const baseItems = document.querySelectorAll('.base-item');
+            
+            let ingredientId = 0;
+            let totalPrice = 5.00; // Starting with classic dough
+            let currentDough = 'classic';
+            let hasTomatoSauce = false;
+            let hasCheese = false;
+            let isCooking = false;
+            let isCooked = false;
+            
+            // Dough colors and prices
+            const doughColors = {
+                'classic': '#e6b17e',
+                'thin': '#f0c78e',
+                'stuffed': '#d4924b'
+            };
+            
+            updatePrice();
+            
+            // Make ingredients draggable
+            ingredientItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+            });
+            
+            // Make dough types draggable
+            doughItems.forEach(item => {
+                item.addEventListener('dragstart', handleDoughDragStart);
+            });
+            
+            // Make base types draggable
+            baseItems.forEach(item => {
+                item.addEventListener('dragstart', handleBaseDragStart);
+            });
+            
+            // Set up pizza area as drop target
+            pizzaBase.addEventListener('dragover', handleDragOver);
+            pizzaBase.addEventListener('drop', handleDrop);
+            
+            // Reset button
+            resetButton.addEventListener('click', resetPizza);
+            
+            // Cook button
+            cookButton.addEventListener('click', cookPizza);
+            
+            function handleDragStart(e) {
+                const emoji = this.innerText;
+                const ingredientType = this.getAttribute('data-ingredient');
+                const price = parseFloat(this.getAttribute('data-price'));
+                
+                e.dataTransfer.setData('text/plain', JSON.stringify({
+                    type: 'ingredient',
+                    emoji: emoji,
+                    ingredientType: ingredientType,
+                    price: price,
+                    id: `ingredient-${ingredientId++}`
+                }));
+            }
+            
+            function handleDoughDragStart(e) {
+                const doughType = this.getAttribute('data-dough');
+                const price = parseFloat(this.getAttribute('data-price'));
+                
+                e.dataTransfer.setData('text/plain', JSON.stringify({
+                    type: 'dough',
+                    doughType: doughType,
+                    price: price
+                }));
+            }
+            
+            function handleBaseDragStart(e) {
+                const baseType = this.getAttribute('data-base');
+                const price = parseFloat(this.getAttribute('data-price'));
+                
+                e.dataTransfer.setData('text/plain', JSON.stringify({
+                    type: 'base',
+                    baseType: baseType,
+                    price: price
+                }));
+            }
+            
+            function handleDragOver(e) {
+                e.preventDefault();
+            }
+            
+            function handleDrop(e) {
+                if (isCooking || isCooked) return; // Prevent changes during cooking or after cooked
+                
+                e.preventDefault();
+                
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                
+                if (data.type === 'ingredient') {
+                    // Create a new ingredient element
+                    const ingredient = document.createElement('div');
+                    ingredient.className = 'ingredient';
+                    ingredient.id = data.id;
+                    ingredient.innerText = data.emoji;
+                    ingredient.dataset.price = data.price;
+                    
+                    // Calculate position relative to pizza base
+                    const rect = pizzaBase.getBoundingClientRect();
+                    const x = e.clientX - rect.left - 15; // Adjust to center ingredient
+                    const y = e.clientY - rect.top - 15;
+                    
+                    // Ensure ingredient stays within pizza boundaries
+                    const pizzaRadius = rect.width / 2;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    // Calculate distance from center
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // If outside pizza radius, adjust position
+                    if (distance > pizzaRadius - 20) {
+                        const ratio = (pizzaRadius - 20) / distance;
+                        ingredient.style.left = `${centerX + dx * ratio}px`;
+                        ingredient.style.top = `${centerY + dy * ratio}px`;
+                    } else {
+                        ingredient.style.left = `${x}px`;
+                        ingredient.style.top = `${y}px`;
+                    }
+                    
+                    // Make placed ingredients draggable
+                    ingredient.draggable = true;
+                    ingredient.addEventListener('dragstart', handleIngredientDragStart);
+                    ingredient.addEventListener('click', handleIngredientClick);
+                    
+                    pizzaBase.appendChild(ingredient);
+                    
+                    // Add price
+                    totalPrice += data.price;
+                    updatePrice();
+                    
+                } else if (data.type === 'dough') {
+                    // Calculate price difference
+                    let doughPrice = 0;
+                    doughItems.forEach(item => {
+                        if (item.getAttribute('data-dough') === currentDough) {
+                            doughPrice = parseFloat(item.getAttribute('data-price'));
+                        }
+                    });
+                    
+                    // Subtract old dough price and add new dough price
+                    totalPrice = totalPrice - doughPrice + data.price;
+                    updatePrice();
+                    
+                    // Change the pizza base color according to dough type
+                    pizzaBase.style.backgroundColor = doughColors[data.doughType];
+                    currentDough = data.doughType;
+                    
+                } else if (data.type === 'base') {
+                    if (data.baseType === 'tomato') {
+                        if (!hasTomatoSauce) {
+                            pizzaSauce.style.display = 'block';
+                            hasTomatoSauce = true;
+                            totalPrice += data.price;
+                            updatePrice();
+                        }
+                    } else if (data.baseType === 'cheese') {
+                        if (!hasCheese) {
+                            pizzaCheese.style.display = 'block';
+                            hasCheese = true;
+                            totalPrice += data.price;
+                            updatePrice();
+                        }
+                    }
+                }
+            }
+            
+            function handleIngredientDragStart(e) {
+                const id = this.id;
+                e.dataTransfer.setData('text/plain', JSON.stringify({
+                    type: 'placedIngredient',
+                    id: id
+                }));
+                
+                // Delay the removal to allow drag to complete
+                setTimeout(() => {
+                    this.style.display = 'none';
+                }, 0);
+            }
+            
+            function handleIngredientClick(e) {
+                if (isCooking || isCooked) return; // Prevent changes during cooking or after cooked
+                
+                // Subtract price
+                totalPrice -= parseFloat(this.dataset.price);
+                updatePrice();
+                
+                // Remove ingredient on click
+                this.remove();
+            }
+            
+            function resetPizza() {
+                if (isCooking) return; // Prevent reset during cooking
+                
+                // Remove all ingredients
+                const ingredients = document.querySelectorAll('.ingredient');
+                ingredients.forEach(ing => ing.remove());
+                
+                // Reset pizza base to default
+                pizzaBase.style.backgroundColor = doughColors.classic;
+                currentDough = 'classic';
+                
+                // Hide sauce and cheese
+                pizzaSauce.style.display = 'none';
+                pizzaCheese.style.display = 'none';
+                hasTomatoSauce = false;
+                hasCheese = false;
+                
+                // Reset price to base dough price
+                totalPrice = 5.00;
+                updatePrice();
+                
+                // Reset cooking elements
+                progressContainer.style.display = 'none';
+                cookingMessage.style.display = 'none';
+                cookingMessage.textContent = '';
+                progressBar.style.width = '0%';
+                isCooking = false;
+                isCooked = false;
+                
+                // Reset pizza appearance
+                pizzaBase.style.transform = 'translate(-50%, -50%)';
+                
+                // Reset buttons
+                cookButton.disabled = false;
+                cookButton.style.display = 'inline-block';
+                
+                // Remove any confetti
+                document.querySelectorAll('.confetti').forEach(c => c.remove());
+            }
+            
+            function updatePrice() {
+                priceDisplay.textContent = `Total: $${totalPrice.toFixed(2)}`;
+            }
+            
+            function cookPizza() {
+                if (isCooking) return;
+                
+                isCooking = true;
+                cookButton.disabled = true;
+                progressContainer.style.display = 'block';
+                cookingMessage.style.display = 'block';
+                cookingMessage.textContent = 'Cooking your pizza...';
+                
+                let progress = 0;
+                const cookingInterval = setInterval(() => {
+                    progress += 5;
+                    progressBar.style.width = `${progress}%`;
+                    
+                    if (progress >= 100) {
+                        clearInterval(cookingInterval);
+                        cookingMessage.textContent = 'Congratulations! Your pizza is ready!';
+                        isCooking = false;
+                        isCooked = true;
+                        
+                        // Create confetti effect for completion
+                        createConfetti();
+                    }
+                }, 200); // Total time: 4 seconds
+            }
+            
+            function createConfetti() {
+                const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#ff8906', '#f25f4c'];
+                
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.left = `${Math.random() * 100}%`;
+                    confetti.style.top = `${Math.random() * 100}%`;
+                    confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear forwards`;
+                    confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                    
+                    // Custom animation for each confetti piece
+                    const keyframes = `
+                    @keyframes confetti-fall {
+                        0% {
+                            transform: translate(0, 0) rotate(0deg);
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 + 100}px) rotate(${Math.random() * 360}deg);
+                            opacity: 0;
+                        }
+                    }`;
+                    
+                    const style = document.createElement('style');
+                    style.innerHTML = keyframes;
+                    document.head.appendChild(style);
+                    
+                    document.querySelector('.pizza-container').appendChild(confetti);
+                    
+                    // Remove confetti after animation
+                    setTimeout(() => {
+                        confetti.remove();
+                        style.remove();
+                    }, 5000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

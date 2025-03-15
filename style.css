@@ -1,0 +1,122 @@
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #222, #444);
+    color: white;
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.ingredients-list, .dough-list {
+    width: 20%;
+    text-align: left;
+}
+
+#ingredients, #doughs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ingredient, .dough {
+    font-size: 2rem;
+    cursor: grab;
+    padding: 5px;
+    position: relative;
+}
+
+.ingredient:hover, .dough:hover {
+    transform: scale(1.1);
+}
+
+/* Tooltip (Fun Facts on Hover) */
+.ingredient::after, .dough::after {
+    content: attr(data-fact);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.ingredient:hover::after, .dough:hover::after {
+    opacity: 1;
+}
+
+.pizza-area {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: #f5d6a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 5px dashed #c07d34;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+}
+
+#sauce-layer {
+    position: absolute;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    background: transparent;
+}
+
+#cheese-layer {
+    position: absolute;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.placed-ingredient {
+    position: absolute;
+    font-size: 3rem;
+    transform: translate(-50%, -50%);
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    background-color: #ff6600;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ff4400;
+}
+
+/* Progress Bar Styling */
+.progress-container {
+    width: 50%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px auto;
+    display: none;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #ffcc00;
+    transition: width 1s linear;
+}

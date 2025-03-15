@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Restaurant Builder</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff8e1;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #d32f2f;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .game-container {
+            display: flex;
+            gap: 20px;
+        }
+        .scrap-area {
+            flex: 1;
+            background-color: #ffebee;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .restaurant-area {
+            flex: 2;
+            background-color: #e8f5e9;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .scrap-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .scrap-item img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+        .scrap-name {
+            flex-grow: 1;
+        }
+        .scrap-actions button {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .restaurant-components {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .component {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .component h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        .required-scraps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .required-scrap {
+            display: flex;
+            align-items: center;
+            background-color: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .required-scrap img {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+        .build-button {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .build-button:disabled {
+            background-color: #a5d6a7;
+            cursor: not-allowed;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #43a047;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        .scrap-collection {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+        }
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .finish-button-container {
+            text-align: center;
+            margin-top: 30px;
+            display: none;
+        }
+        .finish-button {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .completion-banner {
+            background-color: #ffeb3b;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 30px;
+            display: none;
+        }
+        .completion-banner h2 {
+            color: #d32f2f;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🍕 Pizza Restaurant Builder 🍕</h1>
+        <p>Collect scraps around the map to build your dream pizza restaurant!</p>
+    </header>
+
+    <div class="completion-banner" id="completion-banner">
+        <h2>🎉 Congratulations! 🎉</h2>
+        <p>You have successfully built all components for your pizza restaurant!</p>
+    </div>
+
+    <div class="game-container">
+        <div class="scrap-area">
+            <h2>Scrap Collection</h2>
+            <p>Click "Find Scraps" to collect resources for your restaurant.</p>
+            <button id="find-scraps" style="background-color: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 20px;">Find Scraps</button>
+            
+            <div class="scrap-collection">
+                <h3>Your Inventory</h3>
+                <div class="collection-grid" id="inventory">
+                    <!-- Scrap items will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="restaurant-area">
+            <h2>Pizza Restaurant Components</h2>
+            <p>Collect the required scraps to build each component of your restaurant.</p>
+            
+            <div class="restaurant-components" id="components">
+                <!-- Restaurant components will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div class="finish-button-container" id="finish-button-container">
+        <a href="index.html">
+            <button id="finish-restaurant" class="finish-button">🍕 FINISH RESTAURANT & OPEN FOR BUSINESS 🍕</button>
+        </a>
+        
+    </div>
+
+    <div class="notification" id="notification">Item built successfully!</div>
+
+    <script>
+        // Define the scraps
+        const scraps = [
+            { id: 'metal', name: 'Metal Scraps', icon: '🔩', description: 'Rusty but useful metal pieces' },
+            { id: 'wood', name: 'Wood Pieces', icon: '🪵', description: 'Assorted wooden planks and chunks' },
+            { id: 'plastic', name: 'Plastic Parts', icon: '📏', description: 'Various plastic components' },
+            { id: 'fabric', name: 'Fabric Scraps', icon: '🧵', description: 'Cloth, cushion stuffing, and textile materials' },
+            { id: 'glass', name: 'Glass Shards', icon: '💎', description: 'Carefully collected glass pieces' },
+            { id: 'electronics', name: 'Electronic Parts', icon: '💻', description: 'Wires, circuits, and electronic components' },
+            { id: 'tools', name: 'Salvaged Tools', icon: '🔧', description: 'Partially working tools' },
+            { id: 'brick', name: 'Brick Pieces', icon: '🧱', description: 'Solid construction materials' }
+        ];
+
+        // Define restaurant components and their requirements
+        const restaurantComponents = [
+            {
+                id: 'oven',
+                name: 'Pizza Oven',
+                description: 'A high-temperature oven to cook perfect pizzas',
+                built: false,
+                requirements: [
+                    { id: 'metal', quantity: 5 },
+                    { id: 'brick', quantity: 8 },
+                    { id: 'electronics', quantity: 2 }
+                ]
+            },
+            {
+                id: 'counter',
+                name: 'Service Counter',
+                description: 'Where you prepare and serve pizzas to customers',
+                built: false,
+                requirements: [
+                    { id: 'wood', quantity: 6 },
+                    { id: 'metal', quantity: 3 },
+                    { id: 'plastic', quantity: 2 }
+                ]
+            },
+            {
+                id: 'seating',
+                name: 'Customer Seating',
+                description: 'Tables and chairs for your customers to enjoy their meal',
+                built: false,
+                requirements: [
+                    { id: 'wood', quantity: 8 },
+                    { id: 'fabric', quantity: 5 },
+                    { id: 'metal', quantity: 4 }
+                ]
+            },
+            {
+                id: 'storage',
+                name: 'Ingredient Storage',
+                description: 'Cold storage for your fresh pizza ingredients',
+                built: false,
+                requirements: [
+                    { id: 'metal', quantity: 6 },
+                    { id: 'electronics', quantity: 3 },
+                    { id: 'plastic', quantity: 4 }
+                ]
+            },
+            {
+                id: 'kitchen',
+                name: 'Kitchen Tools',
+                description: 'All the tools needed to prepare excellent pizzas',
+                built: false,
+                requirements: [
+                    { id: 'metal', quantity: 7 },
+                    { id: 'tools', quantity: 4 },
+                    { id: 'wood', quantity: 2 }
+                ]
+            },
+            {
+                id: 'decor',
+                name: 'Restaurant Decor',
+                description: 'Make your restaurant look inviting and professional',
+                built: false,
+                requirements: [
+                    { id: 'fabric', quantity: 7 },
+                    { id: 'glass', quantity: 5 },
+                    { id: 'wood', quantity: 4 }
+                ]
+            }
+        ];
+
+        // Player's inventory
+        let inventory = {
+            metal: 0,
+            wood: 0,
+            plastic: 0,
+            fabric: 0,
+            glass: 0,
+            electronics: 0,
+            tools: 0,
+            brick: 0
+        };
+
+        // Initialize the game
+        function initGame() {
+            renderInventory();
+            renderComponents();
+            
+            // Add event listener for finding scraps
+            document.getElementById('find-scraps').addEventListener('click', findRandomScraps);
+            
+            // Add event listener for finish button
+            document.getElementById('finish-restaurant').addEventListener('click', finishRestaurant);
+            
+            // For demo purposes, you might want to add some starter materials
+            // Comment out the following line for normal gameplay
+            // addStarterMaterials();
+        }
+        
+        // For testing - add some starter materials
+        function addStarterMaterials() {
+            for (const scrapId in inventory) {
+                inventory[scrapId] = 20;
+            }
+            renderInventory();
+            renderComponents();
+        }
+
+        // Render the player's inventory
+        function renderInventory() {
+            const inventoryElement = document.getElementById('inventory');
+            inventoryElement.innerHTML = '';
+            
+            for (const scrap of scraps) {
+                const quantity = inventory[scrap.id];
+                const scrapElement = document.createElement('div');
+                scrapElement.classList.add('scrap-item');
+                scrapElement.innerHTML = `
+                    <span class="scrap-name">${scrap.icon} ${scrap.name}</span>
+                    <span class="scrap-quantity">${quantity}</span>
+                `;
+                inventoryElement.appendChild(scrapElement);
+            }
+        }
+
+        // Render the restaurant components
+        function renderComponents() {
+            const componentsElement = document.getElementById('components');
+            componentsElement.innerHTML = '';
+            
+            for (const component of restaurantComponents) {
+                const componentElement = document.createElement('div');
+                componentElement.classList.add('component');
+                if (component.built) {
+                    componentElement.classList.add('built');
+                }
+                
+                let requirementsHTML = '';
+                for (const req of component.requirements) {
+                    const scrap = scraps.find(s => s.id === req.id);
+                    const hasEnough = inventory[req.id] >= req.quantity;
+                    requirementsHTML += `
+                        <div class="required-scrap" style="${hasEnough ? 'background-color: #c8e6c9;' : ''}">
+                            ${scrap.icon} ${req.quantity}/${inventory[req.id]}
+                        </div>
+                    `;
+                }
+                
+                const canBuild = component.requirements.every(req => inventory[req.id] >= req.quantity);
+                
+                componentElement.innerHTML = `
+                    <h3>${component.name} ${component.built ? '✅' : ''}</h3>
+                    <p>${component.description}</p>
+                    <div class="required-scraps">
+                        ${requirementsHTML}
+                    </div>
+                    <button 
+                        class="build-button" 
+                        data-component="${component.id}" 
+                        ${component.built || !canBuild ? 'disabled' : ''}
+                    >
+                        ${component.built ? 'Built!' : canBuild ? 'Build Now' : 'Need More Scraps'}
+                    </button>
+                `;
+                componentsElement.appendChild(componentElement);
+            }
+            
+            // Add event listeners to build buttons
+            document.querySelectorAll('.build-button').forEach(button => {
+                if (!button.disabled) {
+                    button.addEventListener('click', () => buildComponent(button.dataset.component));
+                }
+            });
+        }
+
+        // Find random scraps
+        function findRandomScraps() {
+            // Random number of scraps found (1-3)
+            const scrapsFound = Math.floor(Math.random() * 3) + 1;
+            
+            for (let i = 0; i < scrapsFound; i++) {
+                // Random scrap type
+                const randomScrapIndex = Math.floor(Math.random() * scraps.length);
+                const randomScrap = scraps[randomScrapIndex];
+                
+                // Random quantity (1-3)
+                const quantity = Math.floor(Math.random() * 3) + 1;
+                
+                // Add to inventory
+                inventory[randomScrap.id] += quantity;
+                
+                // Show notification
+                showNotification(`Found ${quantity} ${randomScrap.name}!`);
+            }
+            
+            // Update the UI
+            renderInventory();
+            renderComponents();
+        }
+
+        // Build a component
+        function buildComponent(componentId) {
+            const component = restaurantComponents.find(c => c.id === componentId);
+            
+            if (!component) return;
+            
+            // Check if all requirements are met
+            const canBuild = component.requirements.every(req => inventory[req.id] >= req.quantity);
+            
+            if (canBuild) {
+                // Deduct resources
+                component.requirements.forEach(req => {
+                    inventory[req.id] -= req.quantity;
+                });
+                
+                // Mark as built
+                component.built = true;
+                
+                // Show notification
+                showNotification(`${component.name} has been built!`);
+                
+                // Update the UI
+                renderInventory();
+                renderComponents();
+                
+                // Check if all components are built
+                checkGameCompletion();
+            }
+        }
+
+        // Check if all components have been built
+        function checkGameCompletion() {
+            const allBuilt = restaurantComponents.every(component => component.built);
+            
+            if (allBuilt) {
+                showNotification('Congratulations! Your pizza restaurant is complete!', 5000);
+                
+                // Show completion banner
+                document.getElementById('completion-banner').style.display = 'block';
+                
+                // Show finish button
+                document.getElementById('finish-button-container').style.display = 'block';
+                
+                // Add some visual celebration
+                document.body.style.backgroundColor = '#fff9c4';
+                setTimeout(() => {
+                    document.body.style.backgroundColor = '#fff8e1';
+                }, 5000);
+            }
+        }
+
+        // Finish restaurant and redirect
+        function finishRestaurant() {
+            // You can set this to any URL you want to redirect to
+            const restaurantURL = 'restaurant.html';
+            
+            // Show a message before redirecting
+            showNotification('Opening your restaurant!', 2000);
+            
+            // Redirect after a slight delay
+            setTimeout(() => {
+                window.location.href = restaurantURL;
+            }, 2000);
+        }
+
+        // Show notification
+        function showNotification(message, duration = 2000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, duration);
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
